@@ -1,0 +1,13 @@
+# Ignore Visual Studio directories and files
+.vs/
+*.suo
+*.csproj.user
+
+# Ignore build artifacts and temporary files
+bin/
+obj/
+*.vsidx
+*.baml
+*.cache
+*.pdb
+*_MarkupCompile.cache
