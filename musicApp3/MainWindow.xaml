@@ -14,9 +14,13 @@
                 <GridView>
                     <GridViewColumn Header="File Name" Width="350" DisplayMemberBinding="{Binding FileName}" />
                     <GridViewColumn Header="File Path" Width="350" DisplayMemberBinding="{Binding FilePath}" />
+                    <GridViewColumn Header="Artist"    Width="350" DisplayMemberBinding="{Binding Artist}" />
+                    <GridViewColumn Header="Album"     Width="350" DisplayMemberBinding="{Binding Artist}" />
                 </GridView>
             </ListView.View>
         </ListView>
-        <Button Content="Open Folder" HorizontalAlignment="Center" VerticalAlignment="Bottom" Click="OpenFolder_Click" Margin="0,10"/>
+        <Grid DockPanel.Dock="Right">
+            <Rectangle Width="250" Height="250" Fill="Red" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Grid>
     </DockPanel>
 </Window>
