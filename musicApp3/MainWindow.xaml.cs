@@ -7,8 +7,9 @@ using System.Diagnostics;
 using TagLib;
 using System.Windows.Media.Imaging;
 using System.Windows.Controls;
-using System.Windows;
 using Ookii.Dialogs.Wpf;
+using System.Windows.Input;
+using System.Windows.Media;
 
 
 
@@ -30,49 +31,14 @@ namespace musicApp3
 
         private void OpenFolder_Click(object sender, RoutedEventArgs e)
         {
-            VistaFolderBrowserDialog folderDialog = new VistaFolderBrowserDialog
+            var folderDialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog
             {
-                Description = "Select a Folder",
-                UseDescriptionForTitle = true
+                Description = "Select a Folder"
             };
 
             if (folderDialog.ShowDialog(this) == true)
             {
-                string selectedFolderPath = folderDialog.SelectedPath;
-                string[] mp3Files = Directory.GetFiles(selectedFolderPath, "*.mp3");
-
-                MP3Files.Clear();
-
-                foreach (string mp3File in mp3Files)
-                {
-                    var mp3Info = new MP3FileInfo
-                    {
-                        FileName = Path.GetFileName(mp3File),
-                        FilePath = mp3File
-                    };
-
-                    try
-                    {
-                        using (var tagFile = TagLib.File.Create(mp3File))
-                        {
-                            mp3Info.FileSizeBytes = new FileInfo(mp3File).Length; // Get file size in bytes
-                            mp3Info.Duration = tagFile.Properties.Duration.ToString(@"mm\:ss");
-                            mp3Info.Artist = tagFile.Tag.FirstPerformer;
-                            mp3Info.Album = tagFile.Tag.Album;
-                            mp3Info.Year = (int)tagFile.Tag.Year;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        // Handle exceptions if there is an issue reading the MP3 file's metadata
-                        mp3Info.Duration = "N/A";
-                        mp3Info.Artist = "N/A";
-                        mp3Info.Album = "N/A";
-                        mp3Info.Year = 0;
-                    }
-
-                    MP3Files.Add(mp3Info);
-                }
+                LoadMP3Files(folderDialog.SelectedPath);
             }
         }
 
@@ -81,6 +47,18 @@ namespace musicApp3
 
         public class MP3FileInfo
         {
+            public MP3FileInfo()
+            {
+                FileName = ""; // Initialize with an empty string or another appropriate default value
+                FilePath = "";
+                FileSizeBytes = 0;
+                Duration = "";
+                Artist = "";
+                Album = "";
+                Year = 0;
+                CoverArt = null; // Initialize as null for now
+            }
+
             public string FileName { get; set; }
             public string FilePath { get; set; }
             public long FileSizeBytes { get; set; }
@@ -88,8 +66,30 @@ namespace musicApp3
             public string Artist { get; set; }
             public string Album { get; set; }
             public int Year { get; set; }
-            public byte[] CoverArt { get; set; }
+            public byte[]? CoverArt { get; set; } // Nullable byte[] for cover art
+
+            // Computed property to convert CoverArt data to ImageSource
+            public ImageSource? CoverArtImage
+            {
+                get
+                {
+                    if (CoverArt != null)
+                    {
+                        using (var ms = new MemoryStream(CoverArt))
+                        {
+                            var image = new BitmapImage();
+                            image.BeginInit();
+                            image.CacheOption = BitmapCacheOption.OnLoad;
+                            image.StreamSource = ms;
+                            image.EndInit();
+                            return image;
+                        }
+                    }
+                    return null; // Return null if CoverArt is null or empty
+                }
+            }
         }
+
 
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
@@ -102,31 +102,33 @@ namespace musicApp3
             {
                 MP3FileInfo selectedFile = (MP3FileInfo)mp3ListView.SelectedItem;
 
-                // Check if the selected file has cover art
-                if (FileHasCoverArt(selectedFile.FilePath))
+                if (selectedFile.CoverArt != null)
                 {
-                    // Load and display the cover art image
-                    var coverArt = LoadCoverArt(selectedFile.FilePath);
-                    coverArtImage.Source = coverArt;
+                    // Create a new BitmapImage and set its source using a MemoryStream
+                    BitmapImage coverArtBitmap = new BitmapImage();
+                    coverArtBitmap.BeginInit();
+                    coverArtBitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    coverArtBitmap.StreamSource = new MemoryStream(selectedFile.CoverArt);
+                    coverArtBitmap.EndInit();
 
-                    // Show the coverArtImage and hide the redSquare
-                    coverArtImage.Visibility = Visibility.Visible;
-                    redSquare.Visibility = Visibility.Collapsed;
-
-                    // Update the statusTextBlock to indicate that cover art is displayed
+                    // Set the source of the coverArtImage control
+                    coverArtImage.Source = coverArtBitmap;
                     statusTextBlock.Text = "Cover art displayed";
+                    coverArtImage.Visibility = Visibility.Visible; // Show the cover art image
+                    redSquare.Visibility = Visibility.Collapsed; // Hide the red square
                 }
                 else
                 {
-                    // If no cover art is found, show the red square and hide the coverArtImage
-                    coverArtImage.Visibility = Visibility.Collapsed;
-                    redSquare.Visibility = Visibility.Visible;
-
-                    // Update the statusTextBlock to indicate that no cover art is available
-                    statusTextBlock.Text = "No cover art available";
+                    // If there is no cover art, display an error message
+                    statusTextBlock.Text = "No cover art available AHAHAHAAH";
+                    coverArtImage.Visibility = Visibility.Collapsed; // Hide the cover art image
+                    redSquare.Visibility = Visibility.Visible; // Show the red square
                 }
             }
         }
+
+
+
 
 
 
@@ -144,28 +146,7 @@ namespace musicApp3
             }
         }
 
-        private BitmapImage LoadCoverArt(string filePath)
-        {
-            try
-            {
-                var file = TagLib.File.Create(filePath);
-                if (file.Tag.Pictures.Length > 0)
-                {
-                    var pictureData = file.Tag.Pictures[0].Data.Data;
-                    var image = new BitmapImage();
-                    image.BeginInit();
-                    image.StreamSource = new MemoryStream(pictureData);
-                    image.EndInit();
-                    return image;
-                }
-            }
-            catch (Exception)
-            {
-                // Handle any exceptions here (e.g., invalid file format)
-            }
-
-            return null; // Return null if no cover art is found or an error occurs
-        }
+        
 
         private void GalleryView_Click(object sender, RoutedEventArgs e)
         {
@@ -178,6 +159,81 @@ namespace musicApp3
             mp3ListView.Visibility = Visibility.Visible;  // Show the list view
             galleryView.Visibility = Visibility.Collapsed; // Hide the gallery view
         }
+
+        private void LoadMP3Files(string folderPath)
+        {
+            MP3Files.Clear();
+
+            string[] mp3Files = Directory.GetFiles(folderPath, "*.mp3");
+
+            foreach (string mp3File in mp3Files)
+            {
+                var mp3Info = new MP3FileInfo
+                {
+                    FileName = Path.GetFileName(mp3File)
+                };
+
+                try
+                {
+                    using (var tagFile = TagLib.File.Create(mp3File))
+                    {
+                        mp3Info.Artist = tagFile.Tag.FirstPerformer;
+                        mp3Info.Album = tagFile.Tag.Album;
+
+                        if (tagFile.Tag.Pictures.Length > 0)
+                        {
+                            var picture = tagFile.Tag.Pictures[0];
+                            mp3Info.CoverArt = picture.Data.Data; // Assign the cover art data directly
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    // Handle exceptions if there is an issue reading the MP3 file's metadata
+                }
+
+                MP3Files.Add(mp3Info);
+            }
+        }
+
+        private BitmapImage ToImage(byte[] array)
+        {
+            using var ms = new System.IO.MemoryStream(array);
+            var image = new BitmapImage();
+            image.BeginInit();
+            image.CacheOption = BitmapCacheOption.OnLoad;
+            image.StreamSource = ms;
+            image.EndInit();
+            return image;
+        }
+
+
+        private void mp3ListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // Handle the double-click event here
+            if (mp3ListView.SelectedItem != null)
+            {
+                MP3FileInfo selectedFile = (MP3FileInfo)mp3ListView.SelectedItem;
+
+                // Check if the selected file has cover art
+                if (selectedFile.CoverArtImage != null)
+                {
+                    // If cover art exists, set the source of the coverArtImage control
+                    coverArtImage.Source = selectedFile.CoverArtImage;
+                    statusTextBlock.Text = "Cover art displayed";
+                    coverArtImage.Visibility = Visibility.Visible; // Show the cover art image
+                    redSquare.Visibility = Visibility.Collapsed; // Hide the red square
+                }
+                else
+                {
+                    // If there is no cover art, display an error message
+                    statusTextBlock.Text = "No cover art available, this sucks";
+                    coverArtImage.Visibility = Visibility.Collapsed; // Hide the cover art image
+                    redSquare.Visibility = Visibility.Visible; // Show the red square
+                }
+            }
+        }
+
 
 
 
