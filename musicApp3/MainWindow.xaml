@@ -13,36 +13,22 @@
                 <MenuItem Header="Gallery View"/>
             </MenuItem>
         </Menu>
-        <ListView Name="mp3ListView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+
+        <ListView Name="mp3ListView" SelectionChanged="mp3ListView_SelectionChanged">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="File Name" Width="350" DisplayMemberBinding="{Binding FileName}" />
                     <GridViewColumn Header="File Path" Width="350" DisplayMemberBinding="{Binding FilePath}" />
-                    <GridViewColumn Header="Artist"    Width="350" DisplayMemberBinding="{Binding Artist}" />
-                    <GridViewColumn Header="Album"     Width="350" DisplayMemberBinding="{Binding Artist}" />
+                    <GridViewColumn Header="Artist" Width="350" DisplayMemberBinding="{Binding Artist}" />
+                    <GridViewColumn Header="Album" Width="350" DisplayMemberBinding="{Binding Album}" />
                 </GridView>
             </ListView.View>
         </ListView>
-        <ItemsControl x:Name="galleryView" ItemsSource="{Binding CoverArtImages}" Visibility="Collapsed">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <WrapPanel IsItemsHost="True" Orientation="Horizontal" />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Image Width="150" Height="150" Source="{Binding}" Margin="5" />
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
 
         <Grid DockPanel.Dock="Right">
-            <!-- Rectangle for displaying the red square -->
-            <Rectangle x:Name="redSquare" Width="250" Height="250" Fill="Red" HorizontalAlignment="Center" VerticalAlignment="Center" />
-            <!-- TextBlock for displaying information -->
-            <TextBlock x:Name="statusTextBlock" Text="No cover art available" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,10" />
-            <!-- Image for displaying cover art -->
-            <Image x:Name="coverArtImage" Width="250" Height="250" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" />
+            <Image x:Name="coverArtImage" Width="250" Height="250" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <TextBlock x:Name="coverArtMessage" Text="No cover art found." Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <TextBlock x:Name="selectedItemInfo" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Grid>
     </DockPanel>
 </Window>

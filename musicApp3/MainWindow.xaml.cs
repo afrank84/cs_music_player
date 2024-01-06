@@ -43,8 +43,6 @@ namespace musicApp3
         }
 
 
-
-
         public class MP3FileInfo
         {
             public MP3FileInfo()
@@ -100,32 +98,28 @@ namespace musicApp3
         {
             if (mp3ListView.SelectedItem != null)
             {
+                // Get the selected item from the ListView
                 MP3FileInfo selectedFile = (MP3FileInfo)mp3ListView.SelectedItem;
 
-                if (selectedFile.CoverArt != null)
+                // Update the cover art image based on the selected item
+                if (selectedFile.CoverArtImage != null)
                 {
-                    // Create a new BitmapImage and set its source using a MemoryStream
-                    BitmapImage coverArtBitmap = new BitmapImage();
-                    coverArtBitmap.BeginInit();
-                    coverArtBitmap.CacheOption = BitmapCacheOption.OnLoad;
-                    coverArtBitmap.StreamSource = new MemoryStream(selectedFile.CoverArt);
-                    coverArtBitmap.EndInit();
-
-                    // Set the source of the coverArtImage control
-                    coverArtImage.Source = coverArtBitmap;
-                    statusTextBlock.Text = "Cover art displayed";
+                    // If cover art exists, set the source of the coverArtImage control
+                    coverArtImage.Source = selectedFile.CoverArtImage;
                     coverArtImage.Visibility = Visibility.Visible; // Show the cover art image
-                    redSquare.Visibility = Visibility.Collapsed; // Hide the red square
                 }
                 else
                 {
-                    // If there is no cover art, display an error message
-                    statusTextBlock.Text = "No cover art available AHAHAHAAH";
+                    // If there is no cover art, display an error message or hide the cover art image
                     coverArtImage.Visibility = Visibility.Collapsed; // Hide the cover art image
-                    redSquare.Visibility = Visibility.Visible; // Show the red square
                 }
+
+                // Update other elements in the GUI based on the selected item
+                // For example, update a TextBlock named "selectedItemInfo"
+                selectedItemInfo.Text = $"Selected Item: {selectedFile.FileName}";
             }
         }
+
 
 
 
@@ -151,13 +145,11 @@ namespace musicApp3
         private void GalleryView_Click(object sender, RoutedEventArgs e)
         {
             mp3ListView.Visibility = Visibility.Collapsed; // Hide the list view
-            galleryView.Visibility = Visibility.Visible; // Show the gallery view
         }
 
         private void ListView_Click(object sender, RoutedEventArgs e)
         {
             mp3ListView.Visibility = Visibility.Visible;  // Show the list view
-            galleryView.Visibility = Visibility.Collapsed; // Hide the gallery view
         }
 
         private void LoadMP3Files(string folderPath)
@@ -210,32 +202,71 @@ namespace musicApp3
 
         private void mp3ListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            // Handle the double-click event here
             if (mp3ListView.SelectedItem != null)
             {
                 MP3FileInfo selectedFile = (MP3FileInfo)mp3ListView.SelectedItem;
 
-                // Check if the selected file has cover art
+                Debug.WriteLine("Selected File: " + selectedFile.FileName);
+
                 if (selectedFile.CoverArtImage != null)
                 {
-                    // If cover art exists, set the source of the coverArtImage control
-                    coverArtImage.Source = selectedFile.CoverArtImage;
-                    statusTextBlock.Text = "Cover art displayed";
-                    coverArtImage.Visibility = Visibility.Visible; // Show the cover art image
-                    redSquare.Visibility = Visibility.Collapsed; // Hide the red square
+                    Debug.WriteLine("Cover Art found.");
+
+                    BitmapImage coverArtBitmap = new BitmapImage();
+                    coverArtBitmap.BeginInit();
+                    coverArtBitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    coverArtBitmap.StreamSource = new MemoryStream(selectedFile.CoverArt);
+                    coverArtBitmap.EndInit();
+
+                    coverArtImage.Source = coverArtBitmap;
+                    coverArtImage.Visibility = Visibility.Visible;
+
+                    // Hide the coverArtMessage when cover art is found
+                    coverArtMessage.Visibility = Visibility.Collapsed;
                 }
                 else
                 {
-                    // If there is no cover art, display an error message
-                    statusTextBlock.Text = "No cover art available, this sucks";
-                    coverArtImage.Visibility = Visibility.Collapsed; // Hide the cover art image
-                    redSquare.Visibility = Visibility.Visible; // Show the red square
+                    coverArtImage.Visibility = Visibility.Collapsed;
+
+                    // Show the coverArtMessage when no cover art is found
+                    coverArtMessage.Visibility = Visibility.Visible;
                 }
             }
         }
 
 
 
+
+        private void DisplayCoverArt(string filePath)
+        {
+            try
+            {
+                var file = TagLib.File.Create(filePath);
+
+                // Check if there is cover art.
+                if (file.Tag.Pictures.Length > 0)
+                {
+                    var picture = file.Tag.Pictures[0];
+                    var pictureData = picture.Data.Data;
+
+                    // Display the cover art image in the Image control.
+                    var bitmapImage = new BitmapImage();
+                    bitmapImage.BeginInit();
+                    bitmapImage.StreamSource = new MemoryStream(pictureData);
+                    bitmapImage.EndInit();
+
+                    coverArtImage.Source = bitmapImage;
+                }
+                else
+                {
+                    MessageBox.Show("No cover art found.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
+            }
+        }
 
     }
 }
