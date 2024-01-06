@@ -234,7 +234,10 @@ namespace musicApp3
             }
         }
 
-
+        private void ImageClicked(object sender, RoutedEventArgs e)
+        {
+ 
+        }
 
 
         private void DisplayCoverArt(string filePath)

@@ -26,9 +26,25 @@
         </ListView>
 
         <Grid DockPanel.Dock="Right">
-            <Image x:Name="coverArtImage" Width="250" Height="250" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            <TextBlock x:Name="coverArtMessage" Text="No cover art found." Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            <TextBlock x:Name="selectedItemInfo" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <!-- Image for displaying cover art -->
+                <Border Width="250" Height="250" MouseLeftButtonDown="ImageClicked">
+                    <Image x:Name="coverArtImage" Width="250" Height="250"/>
+                </Border>
+
+                <!-- TextBlock for cover art message -->
+                <TextBlock x:Name="coverArtMessage" Text="No cover art found." Visibility="Collapsed" />
+
+                <!-- TextBlock for selected item info -->
+                <TextBlock x:Name="selectedItemInfo" />
+
+                <Border x:Name="emptyCoverArt" Width="250" Height="250" BorderBrush="Black" BorderThickness="2" Background="White">
+                    <TextBlock Text="X" FontSize="96" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+            </StackPanel>
+            
         </Grid>
+        
     </DockPanel>
+    
 </Window>
