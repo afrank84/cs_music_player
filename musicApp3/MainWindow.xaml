@@ -23,6 +23,19 @@
                 </GridView>
             </ListView.View>
         </ListView>
+        <ItemsControl x:Name="galleryView" ItemsSource="{Binding CoverArtImages}" Visibility="Collapsed">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel IsItemsHost="True" Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Image Width="150" Height="150" Source="{Binding}" Margin="5" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
         <Grid DockPanel.Dock="Right">
             <!-- Rectangle for displaying the red square -->
             <Rectangle x:Name="redSquare" Width="250" Height="250" Fill="Red" HorizontalAlignment="Center" VerticalAlignment="Center" />

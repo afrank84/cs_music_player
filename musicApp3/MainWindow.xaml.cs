@@ -7,6 +7,8 @@ using System.Diagnostics;
 using TagLib;
 using System.Windows.Media.Imaging;
 using System.Windows.Controls;
+using System.Windows;
+using Ookii.Dialogs.Wpf;
 
 
 
@@ -16,6 +18,8 @@ namespace musicApp3
     public partial class MainWindow : Window
     {
         public ObservableCollection<MP3FileInfo> MP3Files { get; set; }
+        public ObservableCollection<BitmapImage> CoverArtImages { get; } = new ObservableCollection<BitmapImage>();
+
 
         public MainWindow()
         {
@@ -26,18 +30,15 @@ namespace musicApp3
 
         private void OpenFolder_Click(object sender, RoutedEventArgs e)
         {
-            var folderDialog = new OpenFileDialog
+            VistaFolderBrowserDialog folderDialog = new VistaFolderBrowserDialog
             {
-                Title = "Select a Folder",
-                CheckFileExists = false,
-                CheckPathExists = true,
-                FileName = Environment.CurrentDirectory,
-                Filter = "Folder|*.folder"
+                Description = "Select a Folder",
+                UseDescriptionForTitle = true
             };
 
-            if (folderDialog.ShowDialog() == true)
+            if (folderDialog.ShowDialog(this) == true)
             {
-                string selectedFolderPath = System.IO.Path.GetDirectoryName(folderDialog.FileName);
+                string selectedFolderPath = folderDialog.SelectedPath;
                 string[] mp3Files = Directory.GetFiles(selectedFolderPath, "*.mp3");
 
                 MP3Files.Clear();
@@ -73,8 +74,10 @@ namespace musicApp3
                     MP3Files.Add(mp3Info);
                 }
             }
-
         }
+
+
+
 
         public class MP3FileInfo
         {
@@ -85,6 +88,7 @@ namespace musicApp3
             public string Artist { get; set; }
             public string Album { get; set; }
             public int Year { get; set; }
+            public byte[] CoverArt { get; set; }
         }
 
         private void Exit_Click(object sender, RoutedEventArgs e)
@@ -162,5 +166,20 @@ namespace musicApp3
 
             return null; // Return null if no cover art is found or an error occurs
         }
+
+        private void GalleryView_Click(object sender, RoutedEventArgs e)
+        {
+            mp3ListView.Visibility = Visibility.Collapsed; // Hide the list view
+            galleryView.Visibility = Visibility.Visible; // Show the gallery view
+        }
+
+        private void ListView_Click(object sender, RoutedEventArgs e)
+        {
+            mp3ListView.Visibility = Visibility.Visible;  // Show the list view
+            galleryView.Visibility = Visibility.Collapsed; // Hide the gallery view
+        }
+
+
+
     }
 }
