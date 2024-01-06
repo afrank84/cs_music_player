@@ -5,6 +5,10 @@ using System.Collections.ObjectModel;
 using Microsoft.Win32;
 using System.Diagnostics;
 using TagLib;
+using System.Windows.Media.Imaging;
+using System.Windows.Controls;
+
+
 
 
 namespace musicApp3
@@ -86,6 +90,77 @@ namespace musicApp3
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
+        }
+
+        private void mp3ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (mp3ListView.SelectedItem != null)
+            {
+                MP3FileInfo selectedFile = (MP3FileInfo)mp3ListView.SelectedItem;
+
+                // Check if the selected file has cover art
+                if (FileHasCoverArt(selectedFile.FilePath))
+                {
+                    // Load and display the cover art image
+                    var coverArt = LoadCoverArt(selectedFile.FilePath);
+                    coverArtImage.Source = coverArt;
+
+                    // Show the coverArtImage and hide the redSquare
+                    coverArtImage.Visibility = Visibility.Visible;
+                    redSquare.Visibility = Visibility.Collapsed;
+
+                    // Update the statusTextBlock to indicate that cover art is displayed
+                    statusTextBlock.Text = "Cover art displayed";
+                }
+                else
+                {
+                    // If no cover art is found, show the red square and hide the coverArtImage
+                    coverArtImage.Visibility = Visibility.Collapsed;
+                    redSquare.Visibility = Visibility.Visible;
+
+                    // Update the statusTextBlock to indicate that no cover art is available
+                    statusTextBlock.Text = "No cover art available";
+                }
+            }
+        }
+
+
+
+        private bool FileHasCoverArt(string filePath)
+        {
+            try
+            {
+                var file = TagLib.File.Create(filePath);
+                return file.Tag.Pictures.Length > 0;
+            }
+            catch (Exception)
+            {
+                // Handle any exceptions here (e.g., invalid file format)
+                return false;
+            }
+        }
+
+        private BitmapImage LoadCoverArt(string filePath)
+        {
+            try
+            {
+                var file = TagLib.File.Create(filePath);
+                if (file.Tag.Pictures.Length > 0)
+                {
+                    var pictureData = file.Tag.Pictures[0].Data.Data;
+                    var image = new BitmapImage();
+                    image.BeginInit();
+                    image.StreamSource = new MemoryStream(pictureData);
+                    image.EndInit();
+                    return image;
+                }
+            }
+            catch (Exception)
+            {
+                // Handle any exceptions here (e.g., invalid file format)
+            }
+
+            return null; // Return null if no cover art is found or an error occurs
         }
     }
 }
