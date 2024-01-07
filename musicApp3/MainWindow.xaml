@@ -19,8 +19,8 @@
                 <GridView>
                     <GridViewColumn Header="File Name" Width="350" DisplayMemberBinding="{Binding FileName}" />
                     <GridViewColumn Header="File Path" Width="350" DisplayMemberBinding="{Binding FilePath}" />
-                    <GridViewColumn Header="Artist" Width="350" DisplayMemberBinding="{Binding Artist}" />
-                    <GridViewColumn Header="Album" Width="350" DisplayMemberBinding="{Binding Album}" />
+                    <GridViewColumn Header="Artist" Width="250" DisplayMemberBinding="{Binding Artist}" />
+                    <GridViewColumn Header="Album" Width="250" DisplayMemberBinding="{Binding Album}" />
                 </GridView>
             </ListView.View>
         </ListView>
