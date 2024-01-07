@@ -271,5 +271,63 @@ namespace musicApp3
             }
         }
 
+        private void OpenMP3_Click(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
+            openFileDialog.Filter = "MP3 Files|*.mp3";
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                txtFilePath.Text = openFileDialog.FileName;
+            }
+        }
+
+        private void UpdateMetadata_Click(object sender, RoutedEventArgs e)
+        {
+            string filePath = txtFilePath.Text;
+
+            if (System.IO.File.Exists(filePath)) // Use System.IO.File.Exists for the file check
+            {
+                try
+                {
+                    // Load the MP3 file using TagLib.File
+                    var mp3File = TagLib.File.Create(filePath);
+
+                    // Update artist metadata
+                    mp3File.Tag.Performers = new string[] { txtNewArtist.Text };
+
+                    // Download the cover art from an online URL and set it
+                    string coverArtUrl = txtNewCoverURL.Text;
+                    using (System.Net.WebClient webClient = new System.Net.WebClient())
+                    {
+                        byte[] coverData = webClient.DownloadData(coverArtUrl);
+                        var coverArt = new Picture
+                        {
+                            Type = PictureType.FrontCover,
+                            MimeType = System.Net.Mime.MediaTypeNames.Image.Jpeg,
+                            Data = new TagLib.ByteVector(coverData)
+                        };
+                        mp3File.Tag.Pictures = new IPicture[] { coverArt };
+                    }
+
+                    // Save changes
+                    mp3File.Save();
+
+                    MessageBox.Show("Metadata updated successfully.");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error: " + ex.Message);
+                }
+            }
+            else
+            {
+                MessageBox.Show("File not found.");
+            }
+        }
+
+
+
+
     }
 }
