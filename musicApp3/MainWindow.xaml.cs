@@ -30,6 +30,7 @@ namespace musicApp3
             InitializeComponent();
             MP3Files = new ObservableCollection<MP3FileInfo>();
             mp3DataGrid.ItemsSource = MP3Files;
+            DataContext = this;
         }
 
         private void OpenFolder_Click(object sender, RoutedEventArgs e)
@@ -44,6 +45,15 @@ namespace musicApp3
                 LoadMP3Files(folderDialog.SelectedPath);
             }
         }
+
+        public ImageSource CoverArtImageSource
+        {
+            get { return (ImageSource)GetValue(CoverArtImageSourceProperty); }
+            set { SetValue(CoverArtImageSourceProperty, value); }
+        }
+
+        public static readonly DependencyProperty CoverArtImageSourceProperty =
+            DependencyProperty.Register(nameof(CoverArtImageSource), typeof(ImageSource), typeof(MainWindow), new PropertyMetadata(null));
 
 
         public class MP3FileInfo
@@ -97,39 +107,7 @@ namespace musicApp3
             Application.Current.Shutdown();
         }
 
-        private void mp3ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (mp3DataGrid.SelectedItem != null)
-            {
-                // Get the selected item from the ListView
-                MP3FileInfo selectedFile = (MP3FileInfo)mp3DataGrid.SelectedItem;
-
-                // Update the cover art image based on the selected item
-                if (selectedFile.CoverArtImage != null)
-                {
-                    // If cover art exists, set the source of the coverArtImage control
-                    coverArtImage.Source = selectedFile.CoverArtImage;
-                    coverArtImage.Visibility = Visibility.Visible; // Show the cover art image
-                }
-                else
-                {
-                    // If there is no cover art, display an error message or hide the cover art image
-                    coverArtImage.Visibility = Visibility.Collapsed; // Hide the cover art image
-                }
-
-                // Update other elements in the GUI based on the selected item
-                // For example, update a TextBlock named "selectedItemInfo"
-                selectedItemInfo.Text = $"Selected Item: {selectedFile.FileName}";
-
-                // Display the file path in the filePathTextBox
-                filePathTextBox.Text = selectedFile.FilePath;
-            }
-        }
-
-
-
-
-
+        
 
 
         private bool FileHasCoverArt(string filePath)
@@ -207,38 +185,7 @@ namespace musicApp3
         }
 
 
-        private void mp3ListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (mp3DataGrid.SelectedItem != null)
-            {
-                MP3FileInfo selectedFile = (MP3FileInfo)mp3DataGrid.SelectedItem;
-
-                Debug.WriteLine("Selected File: " + selectedFile.FileName);
-
-                if (selectedFile.CoverArtImage != null)
-                {
-                    Debug.WriteLine("Cover Art found.");
-
-                    BitmapImage coverArtBitmap = new BitmapImage();
-                    coverArtBitmap.BeginInit();
-                    coverArtBitmap.CacheOption = BitmapCacheOption.OnLoad;
-                    coverArtBitmap.StreamSource = new MemoryStream(selectedFile.CoverArt);
-                    coverArtBitmap.EndInit();
-
-                    coverArtImage.Source = coverArtBitmap;
-                    coverArtImage.Visibility = Visibility.Visible;
-
-                    // Hide the coverArtMessage when cover art is found
-                    coverArtMessage.Visibility = Visibility.Collapsed;
-                }
-                else
-                {
-                    coverArtImage.Visibility = Visibility.Collapsed;
-                    // Show the coverArtMessage when no cover art is found
-                    coverArtMessage.Visibility = Visibility.Visible;
-                }
-            }
-        }
+        
 
         private void ImageClicked(object sender, RoutedEventArgs e)
         {
@@ -421,6 +368,62 @@ namespace musicApp3
         }
 
 
+        private ImageSource ExtractCoverArt(string mp3FilePath)
+        {
+            try
+            {
+                using (var mp3File = TagLib.File.Create(mp3FilePath))
+                {
+                    if (mp3File.Tag.Pictures.Length > 0)
+                    {
+                        var picture = mp3File.Tag.Pictures[0];
+                        var imageStream = new MemoryStream(picture.Data.Data);
+                        var bitmapImage = new BitmapImage();
+
+                        bitmapImage.BeginInit();
+                        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                        bitmapImage.StreamSource = imageStream;
+                        bitmapImage.EndInit();
+
+                        return bitmapImage;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions if there is an issue reading the MP3 file's metadata or cover art
+                Console.WriteLine($"Error extracting cover art: {ex.Message}");
+            }
+
+            return null; // Return null if there is no cover art or an error occurred
+        }
+
+        private void mp3DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (mp3DataGrid.SelectedItem != null)
+            {
+                MP3FileInfo selectedFile = (MP3FileInfo)mp3DataGrid.SelectedItem;
+
+                ImageSource coverArt = ExtractCoverArt(selectedFile.FilePath);
+
+                if (coverArt != null)
+                {
+                    // Update the CoverArtImageSource property
+                    CoverArtImageSource = coverArt;
+
+                    selectedItemInfo.Text = $"Selected Item: {selectedFile.FileName}";
+                    filePathTextBox.Text = selectedFile.FilePath;
+                }
+                else
+                {
+                    // Clear the CoverArtImageSource property if no cover art is available
+                    CoverArtImageSource = null;
+
+                    selectedItemInfo.Text = $"Selected Item: {selectedFile.FileName}";
+                    filePathTextBox.Text = selectedFile.FilePath;
+                }
+            }
+        }
 
 
 
