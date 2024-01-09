@@ -13,6 +13,9 @@ using System.Windows.Media;
 using System.Windows;
 using System.Data;
 using System.Linq;
+using System.Windows.Threading;
+using System.Windows.Media.Animation;
+
 
 namespace musicApp3
 {
@@ -21,6 +24,7 @@ namespace musicApp3
         public ObservableCollection<MP3FileInfo> MP3Files { get; set; }
         public ObservableCollection<BitmapImage> CoverArtImages { get; } = new ObservableCollection<BitmapImage>();
         private MediaPlayer mediaPlayer = new MediaPlayer();
+        private DispatcherTimer timer;
 
         public MainWindow()
         {
@@ -28,6 +32,34 @@ namespace musicApp3
             MP3Files = new ObservableCollection<MP3FileInfo>();
             mp3DataGrid.ItemsSource = MP3Files;
             DataContext = this;
+
+            // Initialize the timer
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += Timer_Tick;
+        }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            if (mediaPlayer.NaturalDuration.HasTimeSpan)
+            {
+                double currentTime = mediaPlayer.Position.TotalSeconds;
+                double totalTime = mediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+                double progress = (currentTime / totalTime) * 100;
+                TimeProgressBar.Value = progress;
+
+                // Update the SeekBar value based on the current position
+                SeekBar.Value = progress;
+            }
+        }
+
+        private void SeekBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            // Calculate the new playback position based on the Slider value
+            double newPosition = (SeekBar.Value / 100) * mediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+
+            // Set the new position for the MediaPlayer
+            mediaPlayer.Position = TimeSpan.FromSeconds(newPosition);
         }
 
         private void OpenFolder_Click(object sender, RoutedEventArgs e)
@@ -296,6 +328,9 @@ namespace musicApp3
                 MP3FileInfo selectedFile = (MP3FileInfo)mp3DataGrid.SelectedItem;
                 mediaPlayer.Open(new Uri(selectedFile.FilePath, UriKind.RelativeOrAbsolute));
                 mediaPlayer.Play();
+
+                // Start the timer when audio playback begins
+                timer.Start();
             }
             else
             {
@@ -304,14 +339,21 @@ namespace musicApp3
             }
         }
 
+
         private void btnPause_Click(object sender, RoutedEventArgs e)
         {
             mediaPlayer.Pause();
+
+            // Pause the timer when audio playback is paused
+            timer.Stop();
         }
 
         private void btnStop_Click(object sender, RoutedEventArgs e)
         {
             mediaPlayer.Stop();
+
+            // Stop the timer when audio playback stops
+            timer.Stop();
         }
 
         private void volumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)

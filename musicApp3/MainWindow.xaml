@@ -17,7 +17,8 @@
             <Button Content="Reload Data" Click="ReloadDataButton_Click"/>
             <Grid>
                 <TextBox x:Name="SearchTextBox" Text="Search..." Margin="10" Width="200" VerticalAlignment="Top" HorizontalAlignment="Left" GotFocus="SearchTextBox_GotFocus" LostFocus="SearchTextBox_LostFocus" TextChanged="SearchTextBox_TextChanged"/>
-
+                <Slider x:Name="SeekBar" Minimum="0" Maximum="100" Width="200" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,20" ValueChanged="SeekBar_ValueChanged"/>
+                <ProgressBar x:Name="TimeProgressBar" Value="0" Minimum="0" Maximum="100" Width="200" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,20"/>
             </Grid>
 
             <Grid>
