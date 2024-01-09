@@ -377,21 +377,50 @@ namespace musicApp3
 
                 if (editedItem != null)
                 {
-                    // Get the MP3 file path from your data model
-                    string mp3FilePath = editedItem.FilePath;
-
-                    // Load the MP3 file using TagLib#
-                    using (var mp3File = TagLib.File.Create(mp3FilePath))
+                    // Check if the column being edited is not the "File Path" column
+                    if (!e.Column.Header.Equals("File Path"))
                     {
-                        // Update the artist metadata
-                        mp3File.Tag.Performers = new[] { ((System.Windows.Controls.TextBox)e.EditingElement).Text };
+                        // Get the MP3 file path from your data model
+                        string mp3FilePath = editedItem.FilePath;
 
-                        // Save the changes back to the MP3 file
-                        mp3File.Save();
+                        // Load the MP3 file using TagLib#
+                        using (var mp3File = TagLib.File.Create(mp3FilePath))
+                        {
+                            // Determine which column is being edited and update the corresponding metadata
+                            if (e.Column.Header.Equals("Artist"))
+                            {
+                                // Update the artist metadata
+                                mp3File.Tag.Performers = new[] { ((System.Windows.Controls.TextBox)e.EditingElement).Text };
+                            }
+                            else if (e.Column.Header.Equals("Album"))
+                            {
+                                // Update the album metadata
+                                mp3File.Tag.Album = ((System.Windows.Controls.TextBox)e.EditingElement).Text;
+                            }
+                            else if (e.Column.Header.Equals("File Name"))
+                            {
+                                // Update the file name (rename the file)
+                                string newFileName = ((System.Windows.Controls.TextBox)e.EditingElement).Text;
+
+                                // Generate the new file path with the updated name
+                                string newFilePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(mp3FilePath), newFileName);
+
+                                // Rename the file
+                                System.IO.File.Move(mp3FilePath, newFilePath);
+
+                                // Update the data model with the new file path
+                                editedItem.FilePath = newFilePath;
+                            }
+
+                            // Save the changes back to the MP3 file
+                            mp3File.Save();
+                        }
                     }
                 }
             }
         }
+
+
 
 
 
