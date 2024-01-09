@@ -21,17 +21,16 @@
                 <Slider x:Name="volumeSlider" Minimum="0" Maximum="1" ValueChanged="volumeSlider_ValueChanged" Height="25" Width="150" Margin="440,14,0,0"/>
             </Grid>
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                <ListView Name="mp3ListView" SelectionChanged="mp3ListView_SelectionChanged" MaxHeight="900" MaxWidth="1200">
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn Header="File Name" Width="350" DisplayMemberBinding="{Binding FileName}" />
-                            <GridViewColumn Header="File Path" Width="350" DisplayMemberBinding="{Binding FilePath}" />
-                            <GridViewColumn Header="Artist" Width="250" DisplayMemberBinding="{Binding Artist}" />
-                            <GridViewColumn Header="Album" Width="250" DisplayMemberBinding="{Binding Album}" />
-                        </GridView>
-                    </ListView.View>
-                </ListView>
+                <DataGrid Name="mp3DataGrid" AutoGenerateColumns="False" MaxHeight="900" MaxWidth="1200" CellEditEnding="mp3DataGrid_CellEditEnding" CanUserAddRows="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="File Name" Width="350" Binding="{Binding FileName}" />
+                        <DataGridTextColumn Header="File Path" Width="350" Binding="{Binding FilePath}" />
+                        <DataGridTextColumn Header="Artist" Width="250" Binding="{Binding Artist}" />
+                        <DataGridTextColumn Header="Album" Width="250" Binding="{Binding Album}" />
+                    </DataGrid.Columns>
+                </DataGrid>
             </ScrollViewer>
+
 
         </StackPanel>
         <Grid DockPanel.Dock="Right">

@@ -11,6 +11,7 @@ using Ookii.Dialogs.Wpf;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows;
+using System.Data;
 
 
 
@@ -28,7 +29,7 @@ namespace musicApp3
         {
             InitializeComponent();
             MP3Files = new ObservableCollection<MP3FileInfo>();
-            mp3ListView.ItemsSource = MP3Files;
+            mp3DataGrid.ItemsSource = MP3Files;
         }
 
         private void OpenFolder_Click(object sender, RoutedEventArgs e)
@@ -98,10 +99,10 @@ namespace musicApp3
 
         private void mp3ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (mp3ListView.SelectedItem != null)
+            if (mp3DataGrid.SelectedItem != null)
             {
                 // Get the selected item from the ListView
-                MP3FileInfo selectedFile = (MP3FileInfo)mp3ListView.SelectedItem;
+                MP3FileInfo selectedFile = (MP3FileInfo)mp3DataGrid.SelectedItem;
 
                 // Update the cover art image based on the selected item
                 if (selectedFile.CoverArtImage != null)
@@ -149,12 +150,12 @@ namespace musicApp3
 
         private void GalleryView_Click(object sender, RoutedEventArgs e)
         {
-            mp3ListView.Visibility = Visibility.Collapsed; // Hide the list view
+            mp3DataGrid.Visibility = Visibility.Collapsed; // Hide the list view
         }
 
         private void ListView_Click(object sender, RoutedEventArgs e)
         {
-            mp3ListView.Visibility = Visibility.Visible;  // Show the list view
+            mp3DataGrid.Visibility = Visibility.Visible;  // Show the list view
         }
 
         private void LoadMP3Files(string folderPath)
@@ -208,9 +209,9 @@ namespace musicApp3
 
         private void mp3ListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (mp3ListView.SelectedItem != null)
+            if (mp3DataGrid.SelectedItem != null)
             {
-                MP3FileInfo selectedFile = (MP3FileInfo)mp3ListView.SelectedItem;
+                MP3FileInfo selectedFile = (MP3FileInfo)mp3DataGrid.SelectedItem;
 
                 Debug.WriteLine("Selected File: " + selectedFile.FileName);
 
@@ -340,9 +341,9 @@ namespace musicApp3
 
         private void btnPlay_Click(object sender, RoutedEventArgs e)
         {
-            if (mp3ListView.SelectedItem != null)
+            if (mp3DataGrid.SelectedItem != null)
             {
-                MP3FileInfo selectedFile = (MP3FileInfo)mp3ListView.SelectedItem;
+                MP3FileInfo selectedFile = (MP3FileInfo)mp3DataGrid.SelectedItem;
                 mediaPlayer.Open(new Uri(selectedFile.FilePath, UriKind.RelativeOrAbsolute));
                 mediaPlayer.Play();
             }
@@ -367,6 +368,32 @@ namespace musicApp3
         {
             mediaPlayer.Volume = volumeSlider.Value;
         }
+
+        private void mp3DataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            if (e.EditAction == DataGridEditAction.Commit)
+            {
+                var editedItem = e.Row.Item as MP3FileInfo;
+
+                if (editedItem != null)
+                {
+                    // Get the MP3 file path from your data model
+                    string mp3FilePath = editedItem.FilePath;
+
+                    // Load the MP3 file using TagLib#
+                    using (var mp3File = TagLib.File.Create(mp3FilePath))
+                    {
+                        // Update the artist metadata
+                        mp3File.Tag.Performers = new[] { ((System.Windows.Controls.TextBox)e.EditingElement).Text };
+
+                        // Save the changes back to the MP3 file
+                        mp3File.Save();
+                    }
+                }
+            }
+        }
+
+
 
 
 
