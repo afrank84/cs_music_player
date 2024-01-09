@@ -14,6 +14,12 @@
                     <MenuItem Header="Gallery View"/>
                 </MenuItem>
             </Menu>
+            <Button Content="Reload Data" Click="ReloadDataButton_Click"/>
+            <Grid>
+                <TextBox x:Name="SearchTextBox" Text="Search..." Margin="10" Width="200" VerticalAlignment="Top" HorizontalAlignment="Left" GotFocus="SearchTextBox_GotFocus" LostFocus="SearchTextBox_LostFocus" TextChanged="SearchTextBox_TextChanged"/>
+
+            </Grid>
+
             <Grid>
                 <Button x:Name="btnPlay" Content="Play" Click="btnPlay_Click" Height="25" Width="50" />
                 <Button x:Name="btnPause" Content="Pause" Click="btnPause_Click" Height="25" Width="50" Margin="110,0,0,0"/>

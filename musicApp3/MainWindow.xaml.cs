@@ -12,10 +12,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows;
 using System.Data;
-
-
-
-
+using System.Linq;
 
 namespace musicApp3
 {
@@ -44,6 +41,12 @@ namespace musicApp3
             {
                 LoadMP3Files(folderDialog.SelectedPath);
             }
+        }
+        private void ReloadDataGrid()
+        {
+            // Assuming your DataGrid is named mp3DataGrid
+            mp3DataGrid.ItemsSource = null; // Clear the current data source
+            mp3DataGrid.ItemsSource = MP3Files; // Set the data source with the updated MP3Files collection
         }
 
         public ImageSource CoverArtImageSource
@@ -330,19 +333,26 @@ namespace musicApp3
                         // Get the MP3 file path from your data model
                         string mp3FilePath = editedItem.FilePath;
 
-                        // Load the MP3 file using TagLib#
-                        using (var mp3File = TagLib.File.Create(mp3FilePath))
+                        try
                         {
                             // Determine which column is being edited and update the corresponding metadata
                             if (e.Column.Header.Equals("Artist"))
                             {
                                 // Update the artist metadata
-                                mp3File.Tag.Performers = new[] { ((System.Windows.Controls.TextBox)e.EditingElement).Text };
+                                using (var updatedMp3File = TagLib.File.Create(mp3FilePath))
+                                {
+                                    updatedMp3File.Tag.Performers = new[] { ((System.Windows.Controls.TextBox)e.EditingElement).Text };
+                                    updatedMp3File.Save();
+                                }
                             }
                             else if (e.Column.Header.Equals("Album"))
                             {
                                 // Update the album metadata
-                                mp3File.Tag.Album = ((System.Windows.Controls.TextBox)e.EditingElement).Text;
+                                using (var updatedMp3File = TagLib.File.Create(mp3FilePath))
+                                {
+                                    updatedMp3File.Tag.Album = ((System.Windows.Controls.TextBox)e.EditingElement).Text;
+                                    updatedMp3File.Save();
+                                }
                             }
                             else if (e.Column.Header.Equals("File Name"))
                             {
@@ -352,20 +362,55 @@ namespace musicApp3
                                 // Generate the new file path with the updated name
                                 string newFilePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(mp3FilePath), newFileName);
 
-                                // Rename the file
-                                System.IO.File.Move(mp3FilePath, newFilePath);
+                                // Try to rename the file and catch any IOException that may occur
+                                try
+                                {
+                                    System.IO.File.Move(mp3FilePath, newFilePath);
 
-                                // Update the data model with the new file path
-                                editedItem.FilePath = newFilePath;
+                                    // Update the data model with the new file path
+                                    editedItem.FilePath = newFilePath;
+
+                                    // Load the MP3 file using TagLib# with the updated file path
+                                    using (var updatedMp3File = TagLib.File.Create(newFilePath))
+                                    {
+                                        // Update any metadata as needed
+                                        // For example, updating artist and album
+                                        updatedMp3File.Tag.Performers = new[] { ((System.Windows.Controls.TextBox)e.EditingElement).Text };
+                                        updatedMp3File.Tag.Album = ((System.Windows.Controls.TextBox)e.EditingElement).Text;
+
+                                        // Save the changes back to the updated MP3 file
+                                        updatedMp3File.Save();
+                                    }
+
+                                    // Find the index of the edited item in the MP3Files collection
+                                    int index = MP3Files.IndexOf(editedItem);
+
+                                    if (index >= 0)
+                                    {
+                                        // Remove and re-add the item to refresh the DataGrid
+                                        MP3Files.RemoveAt(index);
+                                        MP3Files.Insert(index, editedItem);
+                                    }
+                                }
+                                catch (System.IO.IOException ex)
+                                {
+                                    // Handle the IOException (file in use) gracefully
+                                    MessageBox.Show($"Error: {ex.Message}", "File In Use", MessageBoxButton.OK, MessageBoxImage.Error);
+                                }
                             }
-
-                            // Save the changes back to the MP3 file
-                            mp3File.Save();
+                        }
+                        catch (System.IO.IOException ex)
+                        {
+                            // Handle the IOException (file in use) gracefully
+                            MessageBox.Show($"Error: {ex.Message}", "File In Use", MessageBoxButton.OK, MessageBoxImage.Error);
                         }
                     }
                 }
             }
         }
+
+
+
 
 
         private ImageSource ExtractCoverArt(string mp3FilePath)
@@ -425,8 +470,44 @@ namespace musicApp3
             }
         }
 
+        private void ReloadDataButton_Click(object sender, RoutedEventArgs e)
+        {
+            ReloadDataGrid();
+        }
+
+        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (MP3Files != null) // Check if MP3Files is not null
+            {
+                string searchText = SearchTextBox.Text.ToLower();
+
+                var filteredItems = MP3Files.Where(item =>
+                    item.Artist != null && item.Artist.ToLower().Contains(searchText) ||
+                    item.Album != null && item.Album.ToLower().Contains(searchText) ||
+                    item.FileName != null && item.FileName.ToLower().Contains(searchText)
+                ).ToList();
+
+                mp3DataGrid.ItemsSource = filteredItems;
+            }
+        }
 
 
+
+        private void SearchTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (SearchTextBox.Text == "Search...")
+            {
+                SearchTextBox.Text = "";
+            }
+        }
+
+        private void SearchTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(SearchTextBox.Text))
+            {
+                SearchTextBox.Text = "Search...";
+            }
+        }
 
 
     }
