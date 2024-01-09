@@ -10,6 +10,8 @@ using System.Windows.Controls;
 using Ookii.Dialogs.Wpf;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows;
+
 
 
 
@@ -20,7 +22,7 @@ namespace musicApp3
     {
         public ObservableCollection<MP3FileInfo> MP3Files { get; set; }
         public ObservableCollection<BitmapImage> CoverArtImages { get; } = new ObservableCollection<BitmapImage>();
-
+        private MediaPlayer mediaPlayer = new MediaPlayer();
 
         public MainWindow()
         {
@@ -117,6 +119,9 @@ namespace musicApp3
                 // Update other elements in the GUI based on the selected item
                 // For example, update a TextBlock named "selectedItemInfo"
                 selectedItemInfo.Text = $"Selected Item: {selectedFile.FileName}";
+
+                // Display the file path in the filePathTextBox
+                filePathTextBox.Text = selectedFile.FilePath;
             }
         }
 
@@ -162,6 +167,7 @@ namespace musicApp3
             {
                 var mp3Info = new MP3FileInfo
                 {
+                    FilePath = mp3File,
                     FileName = Path.GetFileName(mp3File)
                 };
 
@@ -227,7 +233,7 @@ namespace musicApp3
                 else
                 {
                     coverArtImage.Visibility = Visibility.Collapsed;
-
+                    emptyCoverArt.Visibility = Visibility.Visible;
                     // Show the coverArtMessage when no cover art is found
                     coverArtMessage.Visibility = Visibility.Visible;
                 }
@@ -314,6 +320,11 @@ namespace musicApp3
                     mp3File.Save();
 
                     MessageBox.Show("Metadata updated successfully.");
+
+                    // Update TextBox controls with new values
+                    txtNewArtist.Text = mp3File.Tag.Performers.Length > 0 ? mp3File.Tag.Performers[0] : ""; // Update artist TextBox
+                    txtNewCoverURL.Text = coverArtUrl; // Update cover URL TextBox
+
                 }
                 catch (Exception ex)
                 {
@@ -326,6 +337,35 @@ namespace musicApp3
             }
         }
 
+        private void btnPlay_Click(object sender, RoutedEventArgs e)
+        {
+            if (mp3ListView.SelectedItem != null)
+            {
+                MP3FileInfo selectedFile = (MP3FileInfo)mp3ListView.SelectedItem;
+                mediaPlayer.Open(new Uri(selectedFile.FilePath, UriKind.RelativeOrAbsolute));
+                mediaPlayer.Play();
+            }
+            else
+            {
+                // Optionally, handle the case where no item is selected
+                MessageBox.Show("Please select a file to play.");
+            }
+        }
+
+        private void btnPause_Click(object sender, RoutedEventArgs e)
+        {
+            mediaPlayer.Pause();
+        }
+
+        private void btnStop_Click(object sender, RoutedEventArgs e)
+        {
+            mediaPlayer.Stop();
+        }
+
+        private void volumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            mediaPlayer.Volume = volumeSlider.Value;
+        }
 
 
 
