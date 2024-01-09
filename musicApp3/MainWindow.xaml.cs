@@ -493,6 +493,7 @@ namespace musicApp3
 
 
 
+
         private void SearchTextBox_GotFocus(object sender, RoutedEventArgs e)
         {
             if (SearchTextBox.Text == "Search...")
@@ -506,6 +507,7 @@ namespace musicApp3
             if (string.IsNullOrWhiteSpace(SearchTextBox.Text))
             {
                 SearchTextBox.Text = "Search...";
+                mp3DataGrid.ItemsSource = MP3Files;
             }
         }
 
