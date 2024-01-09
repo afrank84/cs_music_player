@@ -233,7 +233,6 @@ namespace musicApp3
                 else
                 {
                     coverArtImage.Visibility = Visibility.Collapsed;
-                    emptyCoverArt.Visibility = Visibility.Visible;
                     // Show the coverArtMessage when no cover art is found
                     coverArtMessage.Visibility = Visibility.Visible;
                 }
@@ -279,13 +278,15 @@ namespace musicApp3
 
         private void OpenMP3_Click(object sender, RoutedEventArgs e)
         {
+
             Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
-            openFileDialog.Filter = "MP3 Files|*.mp3";
+            openFileDialog.Filter = "MP3 Files|*.mp3";  
 
             if (openFileDialog.ShowDialog() == true)
             {
                 txtFilePath.Text = openFileDialog.FileName;
             }
+
         }
 
         private void UpdateMetadata_Click(object sender, RoutedEventArgs e)
