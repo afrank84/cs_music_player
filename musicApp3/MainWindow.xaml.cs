@@ -25,6 +25,8 @@ namespace musicApp3
         public ObservableCollection<BitmapImage> CoverArtImages { get; } = new ObservableCollection<BitmapImage>();
         private MediaPlayer mediaPlayer = new MediaPlayer();
         private DispatcherTimer timer;
+        private bool isRepeatEnabled = false; // Flag to indicate if repeat is enabled
+
 
         public MainWindow()
         {
@@ -37,6 +39,9 @@ namespace musicApp3
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromSeconds(1);
             timer.Tick += Timer_Tick;
+
+            // Handle the MediaEnded event to implement repeat behavior
+            mediaPlayer.MediaEnded += MediaElement_MediaEnded;
         }
 
         private void Timer_Tick(object sender, EventArgs e)
@@ -320,7 +325,7 @@ namespace musicApp3
                 MessageBox.Show("File not found.");
             }
         }
-
+/* Audio Controls */
         private void btnPlay_Click(object sender, RoutedEventArgs e)
         {
             if (mp3DataGrid.SelectedItem != null)
@@ -359,6 +364,35 @@ namespace musicApp3
         private void volumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             mediaPlayer.Volume = volumeSlider.Value;
+        }
+
+        private void repeatCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            // Enable repeat mode
+            isRepeatEnabled = true;
+            // Optionally, provide feedback to the user or update the UI to indicate repeat mode is on
+        }
+
+        private void repeatCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            // Disable repeat mode
+            isRepeatEnabled = false;
+            // Optionally, provide feedback to the user or update the UI to indicate repeat mode is off
+        }
+
+        private void MediaElement_MediaEnded(object sender, EventArgs e)
+        {
+            if (isRepeatEnabled)
+            {
+                // Repeat the current song if repeat mode is enabled
+                mediaPlayer.Position = TimeSpan.Zero; // Restart the song from the beginning
+                mediaPlayer.Play();
+            }
+            else
+            {
+                // Optionally, implement logic to play the next song in your playlist here
+                // For example, you can maintain a list of songs and their order and play the next song when one finishes.
+            }
         }
 
         private void mp3DataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
