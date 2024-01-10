@@ -63,8 +63,29 @@ namespace musicApp3
                 viewModel.CurrentTime = mediaPlayer.Position;
                 viewModel.TotalTime = mediaPlayer.NaturalDuration.TimeSpan;
                 viewModel.CurrentProgress = progress;
+
+                // Update the SeekBar value based on the current position
+                SeekBar.Value = progress;
+
+                // Update the TimeProgressBar value based on the current position
+                TimeProgressBar.Value = progress;
+
+                // Check if the song has reached the end and repeat is enabled
+                if (progress >= 100 && isRepeatEnabled)
+                {
+                    // Reset the playback position to the beginning
+                    mediaPlayer.Position = TimeSpan.Zero;
+
+                    // Restart playback
+                    mediaPlayer.Play();
+
+                    // Reset the timer
+                    timer.Stop();
+                    timer.Start();
+                }
             }
         }
+
 
 
 
@@ -413,8 +434,16 @@ namespace musicApp3
             if (isRepeatEnabled)
             {
                 // Repeat the current song if repeat mode is enabled
-                mediaPlayer.Position = TimeSpan.Zero; // Restart the song from the beginning
-                mediaPlayer.Play();
+                mediaPlayer.Position = TimeSpan.Zero; // Reset playback position to the beginning
+                mediaPlayer.Play(); // Restart playback
+
+                // Reset the timer
+                timer.Stop();
+                timer.Start();
+
+                // Update the UI elements to reflect the new playback position
+                viewModel.CurrentTime = mediaPlayer.Position;
+                viewModel.CurrentProgress = 0; // Reset progress to 0
             }
             else
             {
@@ -422,6 +451,7 @@ namespace musicApp3
                 // For example, you can maintain a list of songs and their order and play the next song when one finishes.
             }
         }
+
 
         private void mp3DataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
