@@ -16,11 +16,16 @@
             </Menu>
             <Button Content="Reload Data" Click="ReloadDataButton_Click"/>
             <Grid>
-                <TextBox x:Name="SearchTextBox" Text="Search..." Margin="10" Width="200" VerticalAlignment="Top" HorizontalAlignment="Left" GotFocus="SearchTextBox_GotFocus" LostFocus="SearchTextBox_LostFocus" TextChanged="SearchTextBox_TextChanged"/>
-                <Slider x:Name="SeekBar" Minimum="0" Maximum="100" Width="200" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,40" ValueChanged="SeekBar_ValueChanged"/>
-                <ProgressBar x:Name="TimeProgressBar" Value="0" Minimum="0" Maximum="100" Width="200" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                
+                <StackPanel Orientation="Horizontal">
+                    <TextBox x:Name="SearchTextBox" Text="Search..." Margin="10" Width="200" VerticalAlignment="Top" HorizontalAlignment="Left" GotFocus="SearchTextBox_GotFocus" LostFocus="SearchTextBox_LostFocus" TextChanged="SearchTextBox_TextChanged"/>
+                    <TextBlock Text="{Binding CurrentTime, StringFormat='{}{0:mm\\:ss}'}" HorizontalAlignment="Left" Margin="10,0,0,0"/>
+                    <Slider x:Name="SeekBar" Minimum="0" Maximum="100" Width="200" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,10" ValueChanged="SeekBar_ValueChanged"/>
+                    <TextBlock Text="{Binding TotalTime, StringFormat='{}{0:mm\\:ss}'}" HorizontalAlignment="Right" Margin="0,0,10,0"/>
+                    <ProgressBar x:Name="TimeProgressBar" Value="0" Minimum="0" Maximum="100" Width="200" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                </StackPanel>
             </Grid>
-
+            
             <Grid>
                 <CheckBox x:Name="repeatCheckBox" Content="Repeat" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,10" Checked="repeatCheckBox_Checked" Unchecked="repeatCheckBox_Unchecked"/>
                 <Button x:Name="btnPlay" Content="Play" Click="btnPlay_Click" Height="25" Width="50" />

@@ -15,6 +15,8 @@ using System.Data;
 using System.Linq;
 using System.Windows.Threading;
 using System.Windows.Media.Animation;
+using System.ComponentModel;
+
 
 
 namespace musicApp3
@@ -26,14 +28,17 @@ namespace musicApp3
         private MediaPlayer mediaPlayer = new MediaPlayer();
         private DispatcherTimer timer;
         private bool isRepeatEnabled = false; // Flag to indicate if repeat is enabled
+        private AudioPlayerViewModel viewModel;
+
 
 
         public MainWindow()
         {
             InitializeComponent();
+            viewModel = new AudioPlayerViewModel(); // Initialize the viewModel
             MP3Files = new ObservableCollection<MP3FileInfo>();
             mp3DataGrid.ItemsSource = MP3Files;
-            DataContext = this;
+            DataContext = viewModel; // Set the DataContext to the viewModel
 
             // Initialize the timer
             timer = new DispatcherTimer();
@@ -44,19 +49,24 @@ namespace musicApp3
             mediaPlayer.MediaEnded += MediaElement_MediaEnded;
         }
 
+
+
         private void Timer_Tick(object sender, EventArgs e)
         {
-            if (mediaPlayer.NaturalDuration.HasTimeSpan)
+            if (mediaPlayer != null && mediaPlayer.NaturalDuration.HasTimeSpan)
             {
                 double currentTime = mediaPlayer.Position.TotalSeconds;
                 double totalTime = mediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
                 double progress = (currentTime / totalTime) * 100;
-                TimeProgressBar.Value = progress;
 
-                // Update the SeekBar value based on the current position
-                SeekBar.Value = progress;
+                // Update ViewModel properties
+                viewModel.CurrentTime = mediaPlayer.Position;
+                viewModel.TotalTime = mediaPlayer.NaturalDuration.TimeSpan;
+                viewModel.CurrentProgress = progress;
             }
         }
+
+
 
         private void SeekBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
@@ -118,6 +128,12 @@ namespace musicApp3
             public string Album { get; set; }
             public int Year { get; set; }
             public byte[]? CoverArt { get; set; } // Nullable byte[] for cover art
+
+            // Define the TotalTime property to store the duration of the MP3 file
+            public TimeSpan TotalTime { get; set; }
+
+            // Define a property to store the formatted TotalTime as a string
+            public string TotalTimeFormatted { get; set; }
 
             // Computed property to convert CoverArt data to ImageSource
             public ImageSource? CoverArtImage
@@ -202,6 +218,12 @@ namespace musicApp3
                             var picture = tagFile.Tag.Pictures[0];
                             mp3Info.CoverArt = picture.Data.Data; // Assign the cover art data directly
                         }
+
+                        // Get the duration (total time) of the MP3 file and set it to TotalTime property
+                        mp3Info.TotalTime = tagFile.Properties.Duration;
+
+                        // Calculate the duration in the format "mm:ss" for display
+                        mp3Info.TotalTimeFormatted = string.Format("{0:mm\\:ss}", mp3Info.TotalTime);
                     }
                 }
                 catch (Exception)
@@ -212,6 +234,7 @@ namespace musicApp3
                 MP3Files.Add(mp3Info);
             }
         }
+
 
         private BitmapImage ToImage(byte[] array)
         {
@@ -325,12 +348,16 @@ namespace musicApp3
                 MessageBox.Show("File not found.");
             }
         }
-/* Audio Controls */
+        /* Audio Controls */
         private void btnPlay_Click(object sender, RoutedEventArgs e)
         {
             if (mp3DataGrid.SelectedItem != null)
             {
                 MP3FileInfo selectedFile = (MP3FileInfo)mp3DataGrid.SelectedItem;
+
+                // Stop any existing playback before starting a new one
+                mediaPlayer.Stop();
+
                 mediaPlayer.Open(new Uri(selectedFile.FilePath, UriKind.RelativeOrAbsolute));
                 mediaPlayer.Play();
 
@@ -343,6 +370,7 @@ namespace musicApp3
                 MessageBox.Show("Please select a file to play.");
             }
         }
+
 
 
         private void btnPause_Click(object sender, RoutedEventArgs e)
