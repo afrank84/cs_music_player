@@ -44,10 +44,21 @@ Play music by selecting an MP3 file and clicking the "Play" button.
 Edit metadata and cover art as needed.
 Search for specific MP3 files using the search bar.
 Exit the application when you're done.
-Dependencies
+
+###Dependencies
 The application relies on the following libraries and frameworks:
 
-System, System.IO, System.Windows, System.Collections.ObjectModel, Microsoft.Win32, System.Diagnostics, TagLib, Ookii.Dialogs.Wpf, System.Data, and other .NET libraries.
+System, 
+System.IO, 
+System.Windows, 
+System.Collections.ObjectModel, 
+Microsoft.Win32, 
+System.Diagnostics, 
+TagLib, 
+Ookii.Dialogs.Wpf, 
+System.Data, 
+and other .NET libraries.
+
 It uses Windows Presentation Foundation (WPF) for the user interface.
 Disclaimer
 This code is a simplified example of a music player and manager and may require additional error handling and refinement for production use. It's recommended to adapt and extend the code to meet your specific requirements and handle potential edge cases.
