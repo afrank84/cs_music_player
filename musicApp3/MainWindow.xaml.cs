@@ -579,6 +579,8 @@ namespace musicApp3
 
         private void mp3DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            DataContext = this; // This fixes the image album not showing up. 
+
             if (mp3DataGrid.SelectedItem != null)
             {
                 MP3FileInfo selectedFile = (MP3FileInfo)mp3DataGrid.SelectedItem;
