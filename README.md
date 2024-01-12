@@ -65,3 +65,11 @@ This code is a simplified example of a music player and manager and may require 
 
 01/11/2024 (ScreenShot)
 ![image](https://github.com/afrank84/cs_music_art/assets/11393535/4f68ea75-8c3b-4c0d-a7bd-4ff31f909673)
+
+01/12/2024
+(Dark Mode)
+![image](https://github.com/afrank84/cs_music_art/assets/11393535/4309a79f-9bcb-4fd6-bdbc-623f32971f9c)
+(Light Mode)
+![image](https://github.com/afrank84/cs_music_art/assets/11393535/63c78c0a-7f78-4841-927b-d444555c7a02)
+
+
