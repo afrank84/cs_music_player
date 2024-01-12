@@ -307,7 +307,7 @@ namespace musicApp3
                 MessageBox.Show("Error: " + ex.Message);
             }
         }
-
+        
         private void OpenMP3_Click(object sender, RoutedEventArgs e)
         {
 
@@ -316,48 +316,142 @@ namespace musicApp3
 
             if (openFileDialog.ShowDialog() == true)
             {
-                txtFilePath.Text = openFileDialog.FileName;
+                txtImageURL.Text = openFileDialog.FileName;
             }
 
         }
 
+        private void SelectLocalImage_Click(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.OpenFileDialog imageDialog = new Microsoft.Win32.OpenFileDialog();
+            imageDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.gif;*.bmp";
+
+            if (imageDialog.ShowDialog() == true)
+            {
+                string selectedImagePath = imageDialog.FileName;
+                byte[] coverData;
+
+                if (selectedImagePath.StartsWith("http://") || selectedImagePath.StartsWith("https://"))
+                {
+                    // User provided a URL for the image
+                    try
+                    {
+                        using (System.Net.WebClient webClient = new System.Net.WebClient())
+                        {
+                            coverData = webClient.DownloadData(selectedImagePath);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error downloading image from URL: " + ex.Message);
+                        return;
+                    }
+                }
+                else
+                {
+                    // User selected a local image
+                    coverData = System.IO.File.ReadAllBytes(selectedImagePath);
+                }
+
+                // Check if an item is selected in the grid
+                if (mp3DataGrid.SelectedItem != null)
+                {
+                    MP3FileInfo selectedFile = (MP3FileInfo)mp3DataGrid.SelectedItem;
+                    string mp3FilePath = selectedFile.FilePath;
+
+                    // Create a cover art object and set it
+                    var coverArt = new Picture
+                    {
+                        Type = PictureType.FrontCover,
+                        MimeType = "image/jpeg", // Change this to match the image format if needed
+                        Data = new TagLib.ByteVector(coverData)
+                    };
+
+                    if (!string.IsNullOrEmpty(mp3FilePath) && System.IO.File.Exists(mp3FilePath))
+                    {
+                        try
+                        {
+                            var mp3File = TagLib.File.Create(mp3FilePath);
+                            mp3File.Tag.Pictures = new IPicture[] { coverArt };
+                            mp3File.Save();
+
+                            MessageBox.Show("Cover art updated successfully.");
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Error: " + ex.Message);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Please select an MP3 file first.");
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Please select an item from the grid.");
+                }
+            }
+        }
+
+
+
+        private void txtFilePath_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (txtImageURL.Text == "Selected MP3 File Path")
+            {
+                txtImageURL.Text = string.Empty;
+            }
+        }
+
+        private void txtFilePath_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtImageURL.Text))
+            {
+                txtImageURL.Text = "Selected MP3 File Path";
+            }
+        }
+
+        private void txtImageURL_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (txtImageURL.Text == "Image URL")
+            {
+                txtImageURL.Text = string.Empty;
+            }
+        }
+
+        private void txtImageURL_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtImageURL.Text))
+            {
+                txtImageURL.Text = "Image URL";
+            }
+        }
+
+
         private void UpdateMetadata_Click(object sender, RoutedEventArgs e)
         {
-            string filePath = txtFilePath.Text;
+            string filePath = txtImageURL.Text;
 
-            if (System.IO.File.Exists(filePath)) // Use System.IO.File.Exists for the file check
+            if (!string.IsNullOrWhiteSpace(filePath) && System.IO.File.Exists(filePath))
             {
                 try
                 {
-                    // Load the MP3 file using TagLib.File
                     var mp3File = TagLib.File.Create(filePath);
 
-                    // Update artist metadata
-                    mp3File.Tag.Performers = new string[] { txtNewArtist.Text };
-
-                    // Download the cover art from an online URL and set it
-                    string coverArtUrl = txtNewCoverURL.Text;
-                    using (System.Net.WebClient webClient = new System.Net.WebClient())
+                    if (Uri.TryCreate(txtImageURL.Text, UriKind.Absolute, out Uri imageUri) && (imageUri.Scheme == Uri.UriSchemeHttp || imageUri.Scheme == Uri.UriSchemeHttps))
                     {
-                        byte[] coverData = webClient.DownloadData(coverArtUrl);
-                        var coverArt = new Picture
+                        // User provided a valid URL for the image
+                        using (System.Net.WebClient webClient = new System.Net.WebClient())
                         {
-                            Type = PictureType.FrontCover,
-                            MimeType = System.Net.Mime.MediaTypeNames.Image.Jpeg,
-                            Data = new TagLib.ByteVector(coverData)
-                        };
-                        mp3File.Tag.Pictures = new IPicture[] { coverArt };
+                            byte[] coverData = webClient.DownloadData(imageUri);
+                            UpdateCoverArt(mp3File, coverData);
+                        }
                     }
-
-                    // Save changes
-                    mp3File.Save();
-
-                    MessageBox.Show("Metadata updated successfully.");
-
-                    // Update TextBox controls with new values
-                    txtNewArtist.Text = mp3File.Tag.Performers.Length > 0 ? mp3File.Tag.Performers[0] : ""; // Update artist TextBox
-                    txtNewCoverURL.Text = coverArtUrl; // Update cover URL TextBox
-
+                    else
+                    {
+                        MessageBox.Show("Please provide a valid image URL.");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -366,9 +460,29 @@ namespace musicApp3
             }
             else
             {
-                MessageBox.Show("File not found.");
+                MessageBox.Show("Please select a valid MP3 file first.");
             }
         }
+
+        private void UpdateCoverArt(TagLib.File mp3File, byte[] coverData)
+        {
+            // Create a cover art object and set it
+            var coverArt = new Picture
+            {
+                Type = PictureType.FrontCover,
+                MimeType = "image/jpeg", // Change this to match the image format if needed
+                Data = new TagLib.ByteVector(coverData)
+            };
+            mp3File.Tag.Pictures = new IPicture[] { coverArt };
+
+            // Save changes
+            mp3File.Save();
+
+            MessageBox.Show("Cover art updated successfully.");
+        }
+
+
+
         /* Audio Controls */
         private void btnPlay_Click(object sender, RoutedEventArgs e)
         {
