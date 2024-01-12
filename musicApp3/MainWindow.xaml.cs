@@ -308,18 +308,7 @@ namespace musicApp3
             }
         }
         
-        private void OpenMP3_Click(object sender, RoutedEventArgs e)
-        {
 
-            Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
-            openFileDialog.Filter = "MP3 Files|*.mp3";  
-
-            if (openFileDialog.ShowDialog() == true)
-            {
-                txtImageURL.Text = openFileDialog.FileName;
-            }
-
-        }
 
         private void SelectLocalImage_Click(object sender, RoutedEventArgs e)
         {

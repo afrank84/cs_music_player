@@ -2,6 +2,18 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MP3 File Viewer" Height="500" Width="1000">
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Tahoma"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="FontFamily" Value="Tahoma" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="FontFamily" Value="Tahoma" />
+        </Style>
+        <!-- Add more styles for other text-related controls if needed -->
+    </Window.Resources>
     <DockPanel>
         <StackPanel>
             <Menu DockPanel.Dock="Top">
@@ -14,17 +26,17 @@
                     <MenuItem Header="Gallery View"/>
                 </MenuItem>
             </Menu>
-            <Button Content="Reload Data" Click="ReloadDataButton_Click"/>
+            
             <Grid>
                 
             </Grid>
             
             <Grid>
-                <TextBox x:Name="SearchTextBox" Text="Search..." Margin="10" Width="400" VerticalAlignment="Top" HorizontalAlignment="Left" GotFocus="SearchTextBox_GotFocus" LostFocus="SearchTextBox_LostFocus" TextChanged="SearchTextBox_TextChanged"/>
+                <TextBox x:Name="SearchTextBox" Text="Search..." Padding="3" Margin="10" Width="400" Height="25" VerticalAlignment="Top" HorizontalAlignment="Left" GotFocus="SearchTextBox_GotFocus" LostFocus="SearchTextBox_LostFocus" TextChanged="SearchTextBox_TextChanged"/>
                 <CheckBox x:Name="repeatCheckBox" Content="Repeat" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,10" Checked="repeatCheckBox_Checked" Unchecked="repeatCheckBox_Unchecked"/>
-                <Button x:Name="btnPlay" Content="Play" Click="btnPlay_Click" Height="25" Width="50" />
-                <Button x:Name="btnPause" Content="Pause" Click="btnPause_Click" Height="25" Width="50" Margin="110,0,0,0"/>
-                <Button x:Name="btnStop" Content="Stop" Click="btnStop_Click" Height="25" Width="50" Margin="220,0,0,0"/>
+                <Button x:Name="btnPlay" Content="Play" Click="btnPlay_Click" Height="25" Width="50" Background="LawnGreen" />
+                <Button x:Name="btnPause" Content="Pause" Click="btnPause_Click" Height="25" Width="50" Margin="110,0,0,0" Background="LightSkyBlue"/>
+                <Button x:Name="btnStop" Content="Stop" Click="btnStop_Click" Height="25" Width="50" Margin="220,0,0,0" Background="Tomato"/>
                 <Slider x:Name="volumeSlider" Minimum="0" Maximum="1" ValueChanged="volumeSlider_ValueChanged" Height="25" Width="150" Margin="440,14,0,0"/>
             </Grid>
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
@@ -42,25 +54,32 @@
         </StackPanel>
         <Grid DockPanel.Dock="Right">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Name="filePathTextBox" Text="" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="300" Height="30"/>
-                <!-- Image for displaying cover art -->
-                <Border Width="250" Height="250" MouseLeftButtonDown="ImageClicked">
-                    <Image x:Name="coverArtImage" Width="250" Height="250" Source="{Binding CoverArtImageSource}" MouseLeftButtonDown="SelectLocalImage_Click"/>
-                </Border>
+                <TextBlock Name="filePathTextBox" Text="" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="300" Height="30" />
+                <TextBlock x:Name="selectedItemInfo" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding Artist}"/>
 
+                <!-- Image for displaying cover art -->
+                <Border Width="300" Height="300" MouseLeftButtonDown="ImageClicked">
+                    <Border.Effect>
+                        <DropShadowEffect ShadowDepth="5" Direction="320" Opacity="0.5" BlurRadius="5"/>
+                    </Border.Effect>
+                    <Image x:Name="coverArtImage" Width="300" Height="300" Source="{Binding CoverArtImageSource}" MouseLeftButtonDown="SelectLocalImage_Click"/>
+                </Border>
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Reload Data" Click="ReloadDataButton_Click" Width="150" Height="30"/>
+                    <!-- Add this button for selecting a local image -->
+                    <Button x:Name="btnSelectLocalImage" Content="Select Local Image" Width="150" Height="30" Margin="10" VerticalAlignment="Top" HorizontalAlignment="Left" Click="SelectLocalImage_Click" />
+                </StackPanel>
 
                 <!-- TextBlock for cover art message -->
                 <TextBlock x:Name="coverArtMessage" Text="No cover art found." Visibility="Collapsed" />
 
-                <!-- TextBlock for selected item info -->
-                <TextBlock x:Name="selectedItemInfo" />
+                
 
-                <Border x:Name="emptyCoverArt" Width="250" Height="250" BorderBrush="Black" BorderThickness="2" Background="White" Visibility="Collapsed">
+                <Border x:Name="emptyCoverArt" Width="300" Height="300" BorderBrush="Black" BorderThickness="2" Background="White" Visibility="Collapsed">
                     <TextBlock Text="X" FontSize="96" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
-                <Label Content="MP3 File Path:" VerticalAlignment="Center" />
 
-                <Button Content="Open MP3" Click="OpenMP3_Click" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                 
                 <!--
                 <Label Content="New Cover URL: (Locally)" Grid.Row="2"/>
@@ -70,21 +89,20 @@
                 
                 <Button x:Name="btnSelectImage" Content="Select Local Image" Width="150" Height="30" Margin="10" VerticalAlignment="Top" HorizontalAlignment="Left" Click="SelectLocalImage_Click" />
                 -->
-                <Button x:Name="btnUpdateMetadata" Content="Update Metadata" Width="150" Height="30" Margin="10" VerticalAlignment="Top" HorizontalAlignment="Left" Click="UpdateMetadata_Click" />
+                <Button x:Name="btnUpdateMetadata" Content="Update Cover Art (URL)" Width="300" Height="30" Margin="10" VerticalAlignment="Top" HorizontalAlignment="Left" Click="UpdateMetadata_Click" />
 
-                <!-- Add this button for selecting a local image -->
-                <Button x:Name="btnSelectLocalImage" Content="Select Local Image" Width="150" Height="30" Margin="10" VerticalAlignment="Top" HorizontalAlignment="Left" Click="SelectLocalImage_Click" />
+                
 
                 <!-- Add this TextBox for entering an image URL -->
-                <TextBox x:Name="txtImageURL" Width="300" Margin="10" VerticalAlignment="Top" HorizontalAlignment="Left" GotFocus="txtImageURL_GotFocus" LostFocus="txtImageURL_LostFocus" />
+                <TextBox x:Name="txtImageURL" Text="Paste URL (http://example.com/image.jpg)" Width="300" Height="30" Margin="10,0,10,10" Padding="5" VerticalAlignment="Top" HorizontalAlignment="Left" GotFocus="txtImageURL_GotFocus" LostFocus="txtImageURL_LostFocus" />
 
 
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="{Binding CurrentTime, StringFormat='{}{0:mm\\:ss}'}" HorizontalAlignment="Left" Margin="10,0,0,0"/>
-                    <Slider x:Name="SeekBar" Minimum="0" Maximum="100" Width="200" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,10" ValueChanged="SeekBar_ValueChanged"/>
+                    <Slider x:Name="SeekBar" Minimum="0" Maximum="100" Width="300" Height="30" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,10" ValueChanged="SeekBar_ValueChanged"/>
                     <TextBlock Text="{Binding TotalTime, StringFormat='{}{0:mm\\:ss}'}" HorizontalAlignment="Right" Margin="0,0,10,0"/>
                 </StackPanel>
-                <ProgressBar x:Name="TimeProgressBar" Value="0" Minimum="0" Maximum="100" Width="200" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                <ProgressBar x:Name="TimeProgressBar" Value="0" Minimum="0" Maximum="100" Width="300" Height="30" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,100,10"/>
             </StackPanel>
             
         </Grid>
