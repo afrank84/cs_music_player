@@ -772,6 +772,19 @@ namespace musicApp3
             }
         }
 
+        private void LightThemeClick(object sender, RoutedEventArgs e)
+        {
+
+            AppTheme.ChangeTheme(new Uri("Themes/Light.xaml", UriKind.Relative));
+
+        }
+
+        private void DarkThemeClick(object sender, RoutedEventArgs e)
+        {
+            AppTheme.ChangeTheme(new Uri("Themes/Dark.xaml", UriKind.Relative));
+        }
 
     }
 }
+
+
