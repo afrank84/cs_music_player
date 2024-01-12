@@ -431,26 +431,41 @@ namespace musicApp3
 
         private void UpdateMetadata_Click(object sender, RoutedEventArgs e)
         {
-            string filePath = txtImageURL.Text;
+            string imageUrl = txtImageURL.Text; // Get the image URL from the TextBox
 
-            if (!string.IsNullOrWhiteSpace(filePath) && System.IO.File.Exists(filePath))
+            if (Uri.TryCreate(imageUrl, UriKind.Absolute, out Uri imageUri) &&
+                (imageUri.Scheme == Uri.UriSchemeHttp || imageUri.Scheme == Uri.UriSchemeHttps))
             {
                 try
                 {
-                    var mp3File = TagLib.File.Create(filePath);
+                    using (System.Net.WebClient webClient = new System.Net.WebClient())
+                    {
+                        byte[] coverData = webClient.DownloadData(imageUri);
 
-                    if (Uri.TryCreate(txtImageURL.Text, UriKind.Absolute, out Uri imageUri) && (imageUri.Scheme == Uri.UriSchemeHttp || imageUri.Scheme == Uri.UriSchemeHttps))
-                    {
-                        // User provided a valid URL for the image
-                        using (System.Net.WebClient webClient = new System.Net.WebClient())
+                        // Create a cover art object and set it
+                        var coverArt = new Picture
                         {
-                            byte[] coverData = webClient.DownloadData(imageUri);
-                            UpdateCoverArt(mp3File, coverData);
+                            Type = PictureType.FrontCover,
+                            MimeType = "image/jpeg", // Change this to match the image format if needed
+                            Data = new TagLib.ByteVector(coverData)
+                        };
+
+                        // Update the cover art in your MP3 file (use the selected MP3 file path or your logic)
+                        string mp3FilePath = filePathTextBox.Text; // Use the path of the selected MP3 file or your logic
+                        if (!string.IsNullOrEmpty(mp3FilePath) && System.IO.File.Exists(mp3FilePath))
+                        {
+                            var mp3File = TagLib.File.Create(mp3FilePath);
+                            mp3File.Tag.Pictures = new IPicture[] { coverArt };
+                            mp3File.Save();
+
+                            MessageBox.Show("Cover art updated successfully.");
+
+                            // Optionally update other UI elements or perform additional actions as needed
                         }
-                    }
-                    else
-                    {
-                        MessageBox.Show("Please provide a valid image URL.");
+                        else
+                        {
+                            MessageBox.Show("Please select an MP3 file first.");
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -460,26 +475,33 @@ namespace musicApp3
             }
             else
             {
-                MessageBox.Show("Please select a valid MP3 file first.");
+                MessageBox.Show("Please provide a valid image URL.");
             }
         }
 
-        private void UpdateCoverArt(TagLib.File mp3File, byte[] coverData)
+
+
+        private void UpdateCoverArt(string mp3FilePath, byte[] coverData)
         {
-            // Create a cover art object and set it
-            var coverArt = new Picture
+            try
             {
-                Type = PictureType.FrontCover,
-                MimeType = "image/jpeg", // Change this to match the image format if needed
-                Data = new TagLib.ByteVector(coverData)
-            };
-            mp3File.Tag.Pictures = new IPicture[] { coverArt };
-
-            // Save changes
-            mp3File.Save();
-
-            MessageBox.Show("Cover art updated successfully.");
+                var mp3File = TagLib.File.Create(mp3FilePath);
+                var coverArt = new Picture
+                {
+                    Type = PictureType.FrontCover,
+                    MimeType = "image/jpeg", // Change this to match the image format if needed
+                    Data = new TagLib.ByteVector(coverData)
+                };
+                mp3File.Tag.Pictures = new IPicture[] { coverArt };
+                mp3File.Save();
+                MessageBox.Show("Cover art updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
+            }
         }
+
 
 
 

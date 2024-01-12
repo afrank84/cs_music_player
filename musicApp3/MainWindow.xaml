@@ -45,7 +45,7 @@
                 <TextBlock Name="filePathTextBox" Text="" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="300" Height="30"/>
                 <!-- Image for displaying cover art -->
                 <Border Width="250" Height="250" MouseLeftButtonDown="ImageClicked">
-                    <Image x:Name="coverArtImage" Width="250" Height="250" Source="{Binding CoverArtImageSource}"/>
+                    <Image x:Name="coverArtImage" Width="250" Height="250" Source="{Binding CoverArtImageSource}" MouseLeftButtonDown="SelectLocalImage_Click"/>
                 </Border>
 
 
