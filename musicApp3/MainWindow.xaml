@@ -75,7 +75,7 @@
                 <TextBlock Text="{Binding Artist}"/>
 
                 <!-- Image for displaying cover art -->
-                <Border Width="300" Height="300" MouseLeftButtonDown="ImageClicked">
+                <Border Width="300" Height="300">
                     <Border.Effect>
                         <DropShadowEffect ShadowDepth="5" Direction="320" Opacity="0.5" BlurRadius="5"/>
                     </Border.Effect>
