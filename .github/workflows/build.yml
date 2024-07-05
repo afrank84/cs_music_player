@@ -14,24 +14,24 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3 # Updated to v3
+        uses: actions/checkout@v3
 
       - name: Set up .NET
-        uses: actions/setup-dotnet@v3 # Updated to v3
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.x' # Updated to .NET 8.0
+          dotnet-version: '8.0.x' # Specify the latest .NET version
 
       - name: Install dependencies
-        run: dotnet restore cs_music_player.sln
+        run: dotnet restore ./musicApp3/musicApp3.sln
 
       - name: Build
-        run: dotnet build cs_music_player.sln --configuration Release
+        run: dotnet build ./musicApp3/musicApp3.sln --configuration Release
 
       - name: Publish
-        run: dotnet publish cs_music_player.sln --configuration Release --output ./output
+        run: dotnet publish ./musicApp3/musicApp3.sln --configuration Release --output ./musicApp3/output
 
       - name: Copy files to root directory
-        run: cp -r ./output/* ./
+        run: cp -r ./musicApp3/output/* ./
 
       - name: Configure Git
         run: |
@@ -44,4 +44,4 @@ jobs:
           git commit -m 'Add latest build'
           git push origin main
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
