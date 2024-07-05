@@ -1,4 +1,4 @@
-name: Build and Publish cs_music_player
+name: Build and Upload Artifact
 
 on:
   push:
@@ -30,19 +30,8 @@ jobs:
       - name: Publish
         run: dotnet publish ./musicApp3/musicApp3.sln --configuration Release --output ./musicApp3/output
 
-      - name: Copy files to root directory
-        run: cp -r ./musicApp3/output/* ./
-
-      - name: Configure Git
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-
-      - name: Commit and push changes
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/afrank84/cs_music_player.git
-          git add .
-          git commit -m 'Add latest build'
-          git push origin main
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-artifacts
+          path: ./musicApp3/output
