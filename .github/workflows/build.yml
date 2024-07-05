@@ -19,7 +19,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.x' # Specify the latest .NET version
+          dotnet-version: '8.0.x'
 
       - name: Install dependencies
         run: dotnet restore ./musicApp3/musicApp3.sln
@@ -42,6 +42,6 @@ jobs:
         run: |
           git add .
           git commit -m 'Add latest build'
-          git push origin main
+          git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/afrank84/cs_music_player.git HEAD:main
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_PAT: ${{ secrets.GH_PAT }}
