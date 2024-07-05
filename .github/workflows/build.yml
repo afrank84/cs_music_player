@@ -19,7 +19,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '8.0.x' # Specify the latest .NET version
 
       - name: Install dependencies
         run: dotnet restore ./musicApp3/musicApp3.sln
@@ -39,9 +39,10 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
       - name: Commit and push changes
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/afrank84/cs_music_player.git
           git add .
           git commit -m 'Add latest build'
-          git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/afrank84/cs_music_player.git HEAD:main
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
+          git push origin main
