@@ -14,12 +14,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3 # Updated to v3
 
       - name: Set up .NET
-        uses: actions/setup-dotnet@v2
+        uses: actions/setup-dotnet@v3 # Updated to v3
         with:
-          dotnet-version: '7.x' # Specify the .NET version used by cs_music_player
+          dotnet-version: '8.0.x' # Updated to .NET 8.0
 
       - name: Install dependencies
         run: dotnet restore cs_music_player.sln
@@ -30,8 +30,18 @@ jobs:
       - name: Publish
         run: dotnet publish cs_music_player.sln --configuration Release --output ./output
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: cs_music_player_executable
-          path: ./output
+      - name: Copy files to root directory
+        run: cp -r ./output/* ./
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Commit and push changes
+        run: |
+          git add .
+          git commit -m 'Add latest build'
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
